@@ -1,39 +1,54 @@
-const userValidate = require("../Validator/authVAlidate.js")
+
+const userValidate = require("../Validator/authVAlidate.js");
+
 exports.signup = async (req, res) => {
     try {
-        console.log(req.body);
+        // Validate user input and collect all errors
+        const validation = userValidate.validate(req.body, { abortEarly: false }); // Prevent stopping at the first error
 
-        let validateData = await userValidate.validateAsync(req.body)
-        if (validateData.error) {
+        if (validation.error) {
+            // Extract all error messages
+            const errorMessages = validation.error.details.map(err => err.message);
+
+            console.error("Validation Errors:", errorMessages); // Log all errors in console
+
             return res.status(400).json({
                 status: false,
-                message: validateData.error.details[0].message
+                message: "Validation failed",
+                errors: errorMessages, // Return all errors
             });
         }
-        res.status(200).json({
+
+        // Success response
+        return res.status(200).json({
             status: true,
-            message: "User signed up successfully"
+            message: "User signed up successfully",
         });
+
     } catch (error) {
-        res.status(500).json({
+        console.error("Signup Error:", error); // Log error in console
+        return res.status(500).json({
             status: false,
-            message: "An error occurred while signing up the user"
+            message: "An error occurred while signing up the user",
+            error: error.message, // Return error in response
         });
-        console.log(error);
     }
 };
 
-exports.login = (req, res) => {
+
+exports.login = async (req, res) => {
     try {
         return res.status(200).json({
             status: true,
-            message: "User logged in successfully"
+            message: "User logged in successfully",
         });
+
     } catch (error) {
+        console.error("Login Error:", error); // Log error in console
         return res.status(500).json({
             status: false,
-            message: `An error occurred while logging in the user or ${error}`,
+            message: "An error occurred while logging in the user",
+            error: error.message, // Return error in response
         });
-        console.log(error);
     }
 };
