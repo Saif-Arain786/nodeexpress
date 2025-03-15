@@ -4,7 +4,27 @@ const port = process.env.PORT || 5004;
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const mainRouter = require("./Router/mainRouter.js"); // Check the file name (capitalization matters)
+const mongose = require('mongoose');
+require("dotenv").config();
 
+mongose.connect(process.env.connection_string, {
+    // useNewUrlParser: true,
+    // useUnifiedTopology: true,
+})
+// .then(() => {
+//     console.log("mongodb connected successfullys");
+
+// }).catch((error) => {
+//     console.log("error in connection to mongodb", error);
+
+// });
+const db = mongose.connection
+db.once('open', () => {
+    console.log('connected to database');
+})
+db.on('error', () => {
+    console.log('error in connection to database');
+})
 // Middleware
 app.use(cors({ origin: 'http://127.0.0.1:5500' }));
 app.use(bodyParser.urlencoded({ extended: false }));
