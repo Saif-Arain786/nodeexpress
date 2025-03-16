@@ -1,4 +1,5 @@
 
+const authmodel = require("../models/authmodel.js");
 const userValidate = require("../Validator/authVAlidate.js");
 
 exports.signup = async (req, res) => {
@@ -18,7 +19,14 @@ exports.signup = async (req, res) => {
                 errors: errorMessages, // Return all errors
             });
         }
-
+        const user = authmodel(req.body)
+        const userSaved = await user.save()
+        if (!userSaved) {
+            return res.status(400).json({
+                status: false,
+                message: "An error occurred while signing up the user",
+            });
+        }
         // Success response
         return res.status(200).json({
             status: true,
