@@ -3,7 +3,6 @@ const authSchema = new mongoos.Schema({
     email: {
         type: String,
         required: true,
-        unique: true
     },
     password: {
         type: String,
@@ -11,4 +10,4 @@ const authSchema = new mongoos.Schema({
     }
 })
 
-module.exports = mongoos.model('auth', authSchema) // Ensure correct model name
+module.exports = mongoos.model('auths', authSchema) // Ensure correct model name

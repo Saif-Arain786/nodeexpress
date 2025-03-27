@@ -16,7 +16,7 @@
                 redirect: "follow"
             };
 
-            fetch("http://localhost:5004", requestOptions)
+            fetch("http://localhost:5004/login", requestOptions)
                 .then((response) => response.json())
                 .then((result) => console.log(result))
                 .catch((error) => console.error(error));
