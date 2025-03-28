@@ -2,6 +2,8 @@ const authmodel = require("../models/authmodel.js");
 const userValidate = require("../Validator/authVAlidate.js");
 const nodemailer = require("nodemailer");
 const bcrypt = require('bcrypt');
+const JWT = require('jsonwebtoken');
+require("dotenv").config();
 
 
 // Reusable function to send OTP email
@@ -65,6 +67,10 @@ exports.signup = async (req, res) => {
         const user = new authmodel({ ...req.body, otp }); // Include OTP in the user document
         const userSaved = await user.save();
 
+        var token = JWT.sign({ _id: userSaved._id, email: userSaved.email }, process.env.JWT_SECRET, { expiresIn: '1h' })
+        console.log("User saved successfully:", userSaved);
+
+
         if (!userSaved) {
             return res.status(400).json({
                 status: false,
@@ -77,6 +83,7 @@ exports.signup = async (req, res) => {
             status: true,
             message: "User signed up successfully",
             data: userSaved,
+            token
         });
     } catch (error) {
         console.error("Signup Error:", error);
