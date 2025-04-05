@@ -111,3 +111,20 @@ exports.login = async (req, res) => {
         });
     }
 };
+
+exports.verifyOtp = async (req, res) => {
+    try {
+        // Add your OTP verification logic here
+        return res.json({
+            status: true,
+            message: "OTP verified successfully",
+        });
+    } catch (error) {
+        console.error("OTP Verification Error:", error);
+        return res.status(500).json({
+            status: false,
+            message: "An error occurred while verifying the OTP",
+            error: error.message,
+        });
+    }
+}
