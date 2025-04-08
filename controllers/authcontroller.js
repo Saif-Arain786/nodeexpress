@@ -4,6 +4,9 @@ const nodemailer = require("nodemailer");
 const bcrypt = require('bcrypt');
 const JWT = require('jsonwebtoken');
 require("dotenv").config();
+const cloudinary = require('cloudinary').v2;
+const streamifier = require('streamifier'); // For uploading buffer to Cloudinary
+const profilemodel = require("../models/profilemodel.js");
 
 
 // Reusable function to send OTP email
@@ -64,7 +67,7 @@ exports.signup = async (req, res) => {
         console.log("Hashed Password:", req.body.password);
 
         // Save user to database
-        const user = new authmodel({ ...req.body, otp }); // Include OTP in the user document
+        const user = new authmodel({ ...req.body, otp, verified: false }); // Include OTP in the user document
         const userSaved = await user.save();
 
         var token = JWT.sign({ _id: userSaved._id, email: userSaved.email }, process.env.JWT_SECRET, { expiresIn: '1h' })
@@ -95,9 +98,159 @@ exports.signup = async (req, res) => {
     }
 };
 
+
+exports.verifyOtp = async (req, res) => {
+    try {
+        const user = await authmodel.findById(req._id);
+
+        if (!user) {
+            return res.status(404).json({
+                status: false,
+                message: "User not found",
+            });
+        }
+
+        if (String(user.otp) !== String(req.body.otp)) {
+            return res.status(400).json({
+                status: false,
+                message: "Invalid OTP",
+            });
+        }
+
+        const updatedUser = await authmodel.findByIdAndUpdate(
+            req._id,
+            {
+                verified: true,
+                otp: null
+            },
+            { new: true } // returns updated user
+        );
+
+        return res.status(200).json({
+            status: true,
+            message: "OTP verified successfully",
+            user: updatedUser,
+        });
+
+    } catch (error) {
+        console.error("OTP Verification Error:", error);
+        return res.status(500).json({
+            status: false,
+            message: "An error occurred while verifying the OTP",
+            error: error.message,
+        });
+    }
+};
+// make sure it's configured
+
+exports.completeProfile = async (req, res) => {
+    try {
+        const userId = req._id; // or req.user._id
+
+        if (!req.file) {
+            return res.status(400).json({
+                status: false,
+                message: "Profile image is required",
+            });
+        }
+
+        // Upload image to Cloudinary
+        const streamUpload = (buffer) => {
+            return new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    {
+                        folder: 'profile',
+                        quality: "auto:low",
+                        resource_type: 'image',
+                    },
+                    (error, result) => {
+                        if (result) resolve(result);
+                        else reject(error);
+                    }
+                );
+                streamifier.createReadStream(buffer).pipe(stream);
+            });
+        };
+
+        const result = await streamUpload(req.file.buffer);
+        const imageUrl = result.secure_url;
+
+        // Check if profile exists already
+        let profile = await profilemodel.findOne({ userId });
+
+        if (profile) {
+            // Update existing profile
+            profile = await profilemodel.findOneAndUpdate(
+                { userId },
+                {
+                    profileImage: imageUrl,
+                    name: req.body.name,
+                    age: Number(req.body.age),
+                    gender: req.body.gender
+                },
+                { new: true }
+            );
+        } else {
+            // Create new profile
+            profile = new profilemodel({
+                userId,
+                profileImage: imageUrl,
+                name: req.body.name,
+                age: req.body.age,
+                gender: req.body.gender
+            });
+
+            await profile.save();
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: "Profile saved successfully.",
+            user: profile,
+        });
+
+    } catch (error) {
+        console.error("Profile Error:", error);
+        return res.status(500).json({
+            status: false,
+            message: "Error while saving profile.",
+            error: error.message,
+        });
+    }
+};
+
 exports.login = async (req, res) => {
     try {
         // Add your login logic here
+        // const { email, password } = req.body;
+
+        const user = await authmodel.findOne({ email: req.body.email });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const isMatch = await bcrypt.compare(req.body.password, user.password);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: "Invalid credentials" });
+        } else {
+            console.log("User found db verified", user);
+        }
+
+
+
+        // Validate user input
+        const validation = userValidate.validate(req.body, { abortEarly: false });
+        if (validation.error) {
+            const errorMessages = validation.error.details.map((err) => err.message);
+            console.error("Validation Errors:", errorMessages);
+            return res.status(400).json({
+                status: false,
+                message: "Validation failed",
+                errors: errorMessages,
+            });
+        }
         return res.status(200).json({
             status: true,
             message: "User logged in successfully",
@@ -111,20 +264,3 @@ exports.login = async (req, res) => {
         });
     }
 };
-
-exports.verifyOtp = async (req, res) => {
-    try {
-        // Add your OTP verification logic here
-        return res.json({
-            status: true,
-            message: "OTP verified successfully",
-        });
-    } catch (error) {
-        console.error("OTP Verification Error:", error);
-        return res.status(500).json({
-            status: false,
-            message: "An error occurred while verifying the OTP",
-            error: error.message,
-        });
-    }
-}

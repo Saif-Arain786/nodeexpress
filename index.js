@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const mainRouter = require("./Router/mainRouter.js"); // Check the file name (capitalization matters)
 const mongose = require('mongoose');
 require("dotenv").config();
+const cloudinary = require('cloudinary').v2;
 
 mongose.connect(process.env.connection_string, {
     // useNewUrlParser: true,
@@ -18,6 +19,13 @@ mongose.connect(process.env.connection_string, {
 //     console.log("error in connection to mongodb", error);
 
 // });
+// Cloudinary configuration
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 const db = mongose.connection
 db.once('open', () => {
     console.log('connected to database');
