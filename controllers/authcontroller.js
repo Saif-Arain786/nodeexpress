@@ -221,16 +221,20 @@ exports.completeProfile = async (req, res) => {
 
 exports.login = async (req, res) => {
     try {
+        const user = await authmodel.findOne({ email: req.body.email });
+        if (user.verified === false) {
+            return res.status(400).json({ message: "please verify first" });
+        }
         // Add your login logic here
         // const { email, password } = req.body;
 
-        const user = await authmodel.findOne({ email: req.body.email });
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
         const isMatch = await bcrypt.compare(req.body.password, user.password);
+
 
         if (!isMatch) {
             return res.status(401).json({ message: "Invalid credentials" });
