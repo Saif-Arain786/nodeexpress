@@ -145,8 +145,9 @@ exports.verifyOtp = async (req, res) => {
 
 exports.completeProfile = async (req, res) => {
     try {
-        const userId = req._id; // or req.user._id
 
+
+        const userId = req._id; // Get the user ID from the request object
         if (!req.file) {
             return res.status(400).json({
                 status: false,
@@ -175,6 +176,7 @@ exports.completeProfile = async (req, res) => {
         const result = await streamUpload(req.file.buffer);
         const imageUrl = result.secure_url;
 
+
         // Check if profile exists already
         let profile = await profilemodel.findOne({ userId });
 
@@ -202,6 +204,18 @@ exports.completeProfile = async (req, res) => {
 
             await profile.save();
         }
+        const user = await profilemodel.findOne({ userId: profile.userId });
+        if (user) {
+            const Userchang = user._id;
+            console.log("User Profile ID:", Userchang);
+
+            // Now update the auth model with this profile ID
+            await authmodel.findByIdAndUpdate(
+                userId, // ✅ just the ID, not { userId }
+                { profileId: Userchang },
+                { new: true }
+            );
+        }
 
         return res.status(200).json({
             status: true,
@@ -221,7 +235,7 @@ exports.completeProfile = async (req, res) => {
 
 exports.login = async (req, res) => {
     try {
-        const user = await authmodel.findOne({ email: req.body.email });
+        const user = await authmodel.findOne({ email: req.body.email }).populate("profileId");
         if (user.verified === false) {
             return res.status(400).json({ message: "please verify first" });
         }

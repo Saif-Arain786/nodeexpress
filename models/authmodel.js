@@ -16,16 +16,13 @@ const authSchema = new mongoos.Schema({
         type: Boolean,
         default: false
     },
-    profileImage: {
-        type: String,
-        default: null
-    },
-    profileid: {
+
+    profileId: {
         type: mongoos.Schema.Types.ObjectId,
         ref: "profile",
-        required: false, // <-- change this
         default: null
     }
+
 
 
 })
