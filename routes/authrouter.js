@@ -8,7 +8,7 @@ const storage = multer.memoryStorage(); // Store files in memory
 const upload = multer({ storage: storage });
 
 router.post("/signup", authController.signup);
-router.get("/login", authController.login);
+router.post("/login", authController.login);
 router.post("/verifyotp", authmiddleware, authController.verifyOtp);
 router.post("/completeprofile", authmiddleware, upload.single('profileImage'), authController.completeProfile);
 

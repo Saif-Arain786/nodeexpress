@@ -34,7 +34,7 @@ db.on('error', () => {
     console.log('error in connection to database');
 })
 // Middleware
-app.use(cors({ origin: 'http://127.0.0.1:5500' }));
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
