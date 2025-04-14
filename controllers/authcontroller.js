@@ -285,3 +285,21 @@ exports.login = async (req, res) => {
         });
     }
 };
+exports.getprofile = async (req, res) => {
+    try {
+        const user = await profilemodel.findById({ userId: req._id }); // Assuming `req.user.id` is set by the middleware
+        if (!user) {
+          return res.status(404).json({ message: "Profile not found" });
+        }
+        res.json({
+          name: user.name,
+          gender: user.gender,
+          age: user.age,
+          profileImage: user.profileImage,
+          isComplete: user.isComplete,
+        });
+      } catch (error) {
+        console.error("Server error:", error);
+        res.status(500).json({ message: "Server error" });
+      }
+}

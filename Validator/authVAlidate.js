@@ -1,4 +1,4 @@
-const Joi = require('joi');
+const Joi = require('joi'); 
 
 const userValidate = Joi.object({
     email: Joi.string().email().required().messages({
@@ -8,8 +8,8 @@ const userValidate = Joi.object({
         'any.required': 'Email is required'
     }),
     password: Joi.string()
-        .min(8) // Ensure at least 8 characters
-        .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+        .min(8)
+        .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/)
         .required()
         .messages({
             'string.base': 'Password must be a string',

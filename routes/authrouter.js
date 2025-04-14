@@ -11,7 +11,7 @@ router.post("/signup", authController.signup);
 router.post("/login", authController.login);
 router.post("/verifyotp", authmiddleware, authController.verifyOtp);
 router.post("/completeprofile", authmiddleware, upload.single('profileImage'), authController.completeProfile);
-
+router.get("/getProfile", authmiddleware, authController.getprofile);
 
 
 module.exports = router;
