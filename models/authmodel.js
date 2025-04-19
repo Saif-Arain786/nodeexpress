@@ -3,6 +3,7 @@ const authSchema = new mongoos.Schema({
     email: {
         type: String,
         required: true,
+        unique: true,
     },
     password: {
         type: String,
