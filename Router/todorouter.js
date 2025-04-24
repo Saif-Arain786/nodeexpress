@@ -5,4 +5,6 @@ const { authmiddleware } = require("../middleware/authmiddleware.js");
 router.post("/createtodos",authmiddleware, todocontroller.createtodos); // Ensure correct function name
 router.get("/gettodos",authmiddleware, todocontroller.gettodos); // Ensure correct function name
 router.delete("/deletetodos/:id",authmiddleware, todocontroller.deletetodos); // Ensure correct function name
+router.delete("/deletealltodos",authmiddleware, todocontroller.deleteatodos); // Ensure correct function name
+router.put("/updatetodos/:id",authmiddleware, todocontroller.updatetodos); // Ensure correct function name
 module.exports = router;
